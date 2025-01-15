@@ -11,19 +11,19 @@ vnet = network.VirtualNetwork("vnet-pulumi-",
     address_space={"addressPrefixes": ["10.0.0.0/16"]})
 
 # Subnet
-subnet = network.Subnet("subnet",
+subnet = network.Subnet("subnet-",
     resource_group_name=resource_group.name,
     virtual_network_name=vnet.name,
     address_prefix="10.0.1.0/24")
 
 # Public IP
-public_ip = network.PublicIPAddress("publicIp",
+public_ip = network.PublicIPAddress("publicIp-",
     resource_group_name=resource_group.name,
     location=resource_group.location,
     public_ip_allocation_method="Dynamic")
 
 # Network Interface
-nic = network.NetworkInterface("nic",
+nic = network.NetworkInterface("nic-",
     resource_group_name=resource_group.name,
     location=resource_group.location,
     ip_configurations=[{
@@ -33,10 +33,8 @@ nic = network.NetworkInterface("nic",
         "public_ip_address": {"id": public_ip.id},
     }])
 
-"""
-
 # Virtual Machine
-vm = compute.VirtualMachine("vm",
+vm = compute.VirtualMachine("vm-",
     resource_group_name=resource_group.name,
     location=resource_group.location,
     network_profile={"network_interfaces": [{"id": nic.id}]},
@@ -63,13 +61,13 @@ vm = compute.VirtualMachine("vm",
 
 # Custom Script to Deploy Website
 script = """#!/bin/bash
-# sudo apt update
-# sudo apt install -y nginx
-# echo "Hi, I am an Azure Instance created with Pulumi" | sudo tee /var/www/html/index.html
-# sudo systemctl start nginx
+sudo apt update
+sudo apt install -y nginx
+echo "Hi, I am an Azure Instance created with Pulumi" | sudo tee /var/www/html/index.html
+sudo systemctl start nginx
 """
 
-vm_extension = compute.VirtualMachineExtension("vmExtension",
+vm_extension = compute.VirtualMachineExtension("vmExtension-",
     resource_group_name=resource_group.name,
     vm_name=vm.name,
     location=resource_group.location,
@@ -83,6 +81,4 @@ vm_extension = compute.VirtualMachineExtension("vmExtension",
 
 # Export the Public IP of the VM
 pulumi.export("vm_public_ip", public_ip.ip_address)
-
-"""
 
