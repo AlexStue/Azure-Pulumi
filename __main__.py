@@ -1,6 +1,8 @@
 import pulumi
 import infra_region
 import infra_az
+import infra_vm
+import infra_alb
 
 regions = ['germanywestcentral']
 #regions = ['germanywestcentral',
@@ -37,8 +39,14 @@ for region in regions:
         region_az_nat_gateway   = infra_az.create_nat_gateway(region, resource_group, az)
         region_az_nat_asso_sb   = infra_az.associate_nat_gateway_with_subnet(region, region_subnet_public, region_az_nat_gateway, az)
         region_az_nat_asso_pip  = infra_az.associate_nat_gateway_with_PIP(region, region_az_nat_gateway, region_az_public_ip, az)
-
         region_az_rt_private    = infra_az.create_route_table_private(region, resource_group, az)
         region_az_asso_public   = infra_az.associate_route_table_with_private_subnet(region, region_subnet_private, region_az_rt_private, az)
 
+        region_az_backend_pool  = infra_vm.create_backend_pool(region, resource_group, region_subnet_private, az)
+        region_az_nic           = infra_vm.create_nic_in_az(region, resource_group, region_subnet_private, az)
+        region_az_vm            = infra_vm.create_vm_in_az(region, resource_group, region_az_nic, az)
+
 # ------------------------------------------------------------------
+
+    region_public_ip_alb        = infra_vm.create_public_ip_alb(region, resource_group)
+    region_alb                  = infra_vm.create_alb(region, resource_group, region_public_ip_alb)
