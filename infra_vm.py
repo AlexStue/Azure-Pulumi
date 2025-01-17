@@ -1,17 +1,20 @@
 import base64
 import pulumi
 import pulumi_azure_native as azure_native
-from pulumi_azure_native import compute, network
 
+""" 
+- create_nic_in_az
+- create_vm_in_az
+    + Script
+"""
 
 # ------------------------------------------------------------------
 
 def create_nic_in_az(region, resource_group, region_subnet_private, backend_pool, az, nsg):
     nic = azure_native.network.NetworkInterface(
-        f"nic-{region}-AZ{az}-",
+        f"6-NetInterf-{region[:3]}-AZ{az}_",
         resource_group_name=resource_group.name,
         location=region,
-        #availability_zone=az,
         ip_configurations=[{
             "name": "ipconfig1",
             "subnet": {
@@ -27,25 +30,26 @@ def create_nic_in_az(region, resource_group, region_subnet_private, backend_pool
         }
     )
     return nic
+
 def create_vm_in_az(region, resource_group, region_az_nic, az):
+
     script = f"""#!/bin/bash
 exec > /tmp/startup.log 2>&1
 set -x
 sudo apt update
 sudo apt install apache2 -y
-echo "Hi, I'm an Azure Instance in Region {region} in AZ {az}" | sudo tee /var/www/html/index.html
+echo "Hi, I'm an Azure Instance in Region '{region}' in AZ-{az}" | sudo tee /var/www/html/index.html
 sudo systemctl start apache2
 sudo systemctl enable apache2
 """
 
-    # ✅ Base64 encode the script (Azure requires this format for `custom_data`)
     encoded_script = base64.b64encode(script.encode("utf-8")).decode("utf-8")
 
     virtual_machine = azure_native.compute.VirtualMachine(
-        f"vm-{region}-{az}",
+        f"6-VM-{region[:3]}-AZ{az}_",
         resource_group_name=resource_group.name,
         location=region,
-        zones=[az],  # Ensure it's a list
+        zones=[az],
         hardware_profile={"vm_size": "Standard_B1s"},
         network_profile={
             "network_interfaces": [{"id": region_az_nic.id}]
@@ -69,12 +73,12 @@ sudo systemctl enable apache2
             "computer_name": f"vm-{region}-{az}",
             "admin_username": "testadmin",
             "admin_password": "Password1234!",
-            "custom_data": encoded_script,  # ✅ Base64-encoded script
-            "linux_configuration": {  # ✅ Corrected key name
+            "custom_data": encoded_script,
+            "linux_configuration": {
                 "disable_password_authentication": False,
             }
         }
     )
-
     return virtual_machine
+
 # ------------------------------------------------------------------

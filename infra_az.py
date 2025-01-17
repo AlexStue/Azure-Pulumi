@@ -1,11 +1,20 @@
 import pulumi
 import pulumi_azure as azure
 
+""" 
+- create_public_ip
+- create_nat_gateway
+- associate_nat_gateway_with_subnet
+- associate_nat_gateway_with_PIP
+- create_route_table_private
+- associate_route_table_with_private_subnet
+"""
+
 # Public ------------------------------------------------------------------
 
 def create_public_ip(region, resource_group, az):
     ip_public = azure.network.PublicIp(
-        f"ip-public-{region}-AZ{az}_",
+        f"5-PuIP-NAT-{region[:3]}-AZ{az}_",
         resource_group_name=resource_group.name,
         location=resource_group.location,
         allocation_method="Static",
@@ -15,7 +24,7 @@ def create_public_ip(region, resource_group, az):
 
 def create_nat_gateway(region, resource_group, az):
     nat_gateway = azure.network.NatGateway(
-        f"nat-{region[:3]}-AZ{az}_",
+        f"5-NATGW-{region[:3]}-AZ{az}_",
         resource_group_name=resource_group.name,
         location=resource_group.location,
         sku_name="Standard",
@@ -25,7 +34,7 @@ def create_nat_gateway(region, resource_group, az):
 
 def associate_nat_gateway_with_subnet(region, public_subnet, nat_gateway, az):
     nat_association_sn = azure.network.SubnetNatGatewayAssociation(
-        f"nat-asso-sn-{region}-AZ{az}_",
+        f"5-NATGW-asso-{region[:3]}-AZ{az}_",
         subnet_id=public_subnet.id,
         nat_gateway_id=nat_gateway.id,
     )
@@ -33,7 +42,7 @@ def associate_nat_gateway_with_subnet(region, public_subnet, nat_gateway, az):
 
 def associate_nat_gateway_with_PIP(region, nat_gateway, public_ip, az):
     nat_association_pip = azure.network.NatGatewayPublicIpAssociation(
-        f"nat-asso-pip-{region}-AZ{az}_",
+        f"5-PuIP-NAT-asso-{region[:3]}-AZ{az}_",
         nat_gateway_id=nat_gateway.id,
         public_ip_address_id=public_ip.id
     )
@@ -43,7 +52,7 @@ def associate_nat_gateway_with_PIP(region, nat_gateway, public_ip, az):
 
 def create_route_table_private(region, resource_group, az):
     route_table_private = azure.network.RouteTable(
-        f"rt-pr-{region[:3]}-AZ{az}_",
+        f"5-RouTb-{region[:3]}-AZ{az}_",
         resource_group_name=resource_group.name,
         location=resource_group.location,
         routes=[{
@@ -56,12 +65,10 @@ def create_route_table_private(region, resource_group, az):
 
 def associate_route_table_with_private_subnet(region, private_subnet, route_table_private, az):
     private_subnet_association = azure.network.SubnetRouteTableAssociation(
-        f"rt-pr-as-{region[:3]}-AZ{az}-",
+        f"5-RouteTab-asso-{region[:3]}-AZ{az}_",
         subnet_id=private_subnet.id,
         route_table_id=route_table_private.id
     )
     return private_subnet_association
 
 # ------------------------------------------------------------------
-
-
