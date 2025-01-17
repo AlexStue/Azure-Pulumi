@@ -1,14 +1,6 @@
 import pulumi
 import pulumi_azure as azure
 
-def create_backend_pool(region, resource_group, alb, az):
-    backend_pool = azure.lb.BackendAddressPool(
-        f"backend-pool-{region}-AZ{az}-",
-        resource_group_name=resource_group.name,
-        loadbalancer_id=alb.id
-    )
-    return backend_pool
-
 def create_public_ip_alb(region, resource_group,):
     public_ip_alb = azure.network.PublicIp(
         f"public-ip-alb-{region}-",
@@ -32,12 +24,20 @@ def create_alb(region, resource_group, region_public_ip_alb):
     )
     return alb
 
-def create_alb_rule(region, resource_group, region_public_ip_alb):
+def create_backend_pool(region, resource_group, alb, az):
+    backend_pool = azure.lb.BackendAddressPool(
+        f"BackPo-{region[:3]}-AZ{az}-",
+        #resource_group_name=resource_group.name,
+        loadbalancer_id=alb.id
+    )
+    return backend_pool
+
+def create_alb_rule(region, resource_group, alb, backend_pool, az):
     alb_rule = azure.lb.Rule(
-        f"lb-rule-http-{region}-",
-        resource_group_name=resource_group.name,
+        f"lb-rule-{region[:3]}-AZ{az}-",
+        #resource_group_name=resource_group.name,
         loadbalancer_id=alb.id,
-        backend_address_pool_id=backend_pool_az1.id,
+        backend_address_pool_ids=[backend_pool.id],
         frontend_ip_configuration_name="frontend-ip",
         protocol="Tcp",
         frontend_port=80,

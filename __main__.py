@@ -24,12 +24,16 @@ for region in regions:
     region_vnet                 = infra_region.create_region_vnet(region, resource_group)
 
     region_nsg                  = infra_region.create_network_security_group(region, resource_group)
-    region_nsg_rule             = infra_region.create_security_rule(region, resource_group, region_nsg, "Http", 80, 100)
+    #region_nsg_rule            = infra_region.create_security_rule(region, resource_group, region_nsg, "Http", 80, 100)
+    region_nsg_rule             = infra_region.create_all_traffic_security_rules(region, resource_group, region_nsg, "AllowAllTraffic", 1000)
 
     region_subnet_public        = infra_region.create_subnet_public(region, resource_group, region_vnet)
     region_subnet_private       = infra_region.create_subnet_private(region, resource_group, region_vnet)
     region_subnet_asso_public   = infra_region.associate_subnet_public_with_security_group(region, region_subnet_public, region_nsg)
     region_subnet_asso_private  = infra_region.associate_subnet_private_with_security_group(region, region_subnet_private, region_nsg)
+
+    region_public_ip_alb        = infra_alb.create_public_ip_alb(region, resource_group)
+    region_az_alb               = infra_alb.create_alb(region, resource_group, region_public_ip_alb)
 
 # ------------------------------------------------------------------
 
@@ -42,11 +46,10 @@ for region in regions:
         region_az_rt_private    = infra_az.create_route_table_private(region, resource_group, az)
         region_az_asso_public   = infra_az.associate_route_table_with_private_subnet(region, region_subnet_private, region_az_rt_private, az)
 
-        region_az_backend_pool  = infra_vm.create_backend_pool(region, resource_group, region_subnet_private, az)
-        region_az_nic           = infra_vm.create_nic_in_az(region, resource_group, region_subnet_private, az)
+        region_az_backend_pool  = infra_alb.create_backend_pool(region, resource_group, region_az_alb, az)
+        region_az_alb_rule      = infra_alb.create_alb_rule(region, resource_group, region_az_alb, region_az_backend_pool, az)
+
+        region_az_nic           = infra_vm.create_nic_in_az(region, resource_group, region_subnet_private, region_az_backend_pool, az, region_nsg)
         region_az_vm            = infra_vm.create_vm_in_az(region, resource_group, region_az_nic, az)
 
 # ------------------------------------------------------------------
-
-    region_public_ip_alb        = infra_vm.create_public_ip_alb(region, resource_group)
-    region_alb                  = infra_vm.create_alb(region, resource_group, region_public_ip_alb)

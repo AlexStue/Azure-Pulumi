@@ -5,19 +5,20 @@ import pulumi_azure as azure
 
 def create_region_resource_group(region):
     resource_group = azure.core.ResourceGroup(
-        f"rg-{region}_",
+        f"rg-{region}_",  # The resource_name
         location=region
     )
     return resource_group
 
 def create_region_vnet(region, resource_group):
     vnet = azure.network.VirtualNetwork(
-        f"vnet-{region}_",
+        f"vnet-{region}_",  # This is the resource_name
         resource_group_name=resource_group.name,
         location=region,
         address_spaces=["10.0.0.0/16"],
     )
     return vnet
+
 
 # ------------------------------------------------------------------
 
@@ -29,21 +30,36 @@ def create_network_security_group(region, resource_group):
     )
     return nsg
 
-def create_security_rule(region, resource_group, nsg, rule_name, port, priority):
-    rule = azure.network.NetworkSecurityRule(
-        f"nsg-rule-{rule_name}-{region}_",
+def create_all_traffic_security_rules(region, resource_group, nsg, rule_name, priority):
+    inbound_rule = azure.network.NetworkSecurityRule(
+        f"nsg-rule-{rule_name}-inbound-{region}_",
         resource_group_name=resource_group.name,
         network_security_group_name=nsg.name,
         priority=priority,
         access="Allow",
         direction="Inbound",
-        protocol="Tcp",
+        protocol="*",
         source_port_range="*",
-        destination_port_range=str(port),
+        destination_port_range="*",
         source_address_prefix="*",
         destination_address_prefix="*",
     )
-    return rule
+
+    outbound_rule = azure.network.NetworkSecurityRule(
+        f"nsg-rule-{rule_name}-outbound-{region}_",
+        resource_group_name=resource_group.name,
+        network_security_group_name=nsg.name,
+        priority=priority + 100,
+        access="Allow",
+        direction="Outbound",
+        protocol="*",
+        source_port_range="*",
+        destination_port_range="*",
+        source_address_prefix="*",
+        destination_address_prefix="*",
+    )
+    return inbound_rule, outbound_rule
+
 
 # ------------------------------------------------------------------
 
