@@ -10,6 +10,48 @@ import pulumi_azure as azure
 - associate_route_table_with_private_subnet
 """
 
+# Modules ------------------------------------------------------------------
+
+
+
+
+
+# Subnets ------------------------------------------------------------------
+
+def create_subnet_public(region, resource_group, vnet, az):
+    subnet_public = azure.network.Subnet(
+        f"4-SubNetPub-{region[:3]}-AZ{az}_",
+        resource_group_name=resource_group.name,
+        virtual_network_name=vnet.name,
+        address_prefixes=[f"10.1.{az}.0/24"]
+    )
+    return subnet_public
+
+def create_subnet_private(region, resource_group, vnet, az):
+    subnet_private = azure.network.Subnet(
+        f"4-SubNetPri-{region[:3]}-AZ{az}_",
+        resource_group_name=resource_group.name,
+        virtual_network_name=vnet.name,
+        address_prefixes=[f"10.2.{az}.0/24"]
+    )
+    return subnet_private
+
+def associate_subnet_public_with_security_group(region, public_subnet, security_rule, az):
+    subnet_public_association_sg = azure.network.SubnetNetworkSecurityGroupAssociation(
+        f"4-SubNetPub-asso-{region[:3]}_-AZ{az}_",
+        subnet_id=public_subnet.id,
+        network_security_group_id=security_rule.id
+    )
+    return subnet_public_association_sg
+
+def associate_subnet_private_with_security_group(region, private_subnet, security_rule, az):
+    subnet_private_association_sg = azure.network.SubnetNetworkSecurityGroupAssociation(
+        f"4-SubNetPri-asso-{region[:3]}-AZ{az}_",
+        subnet_id=private_subnet.id,
+        network_security_group_id=security_rule.id
+    )
+    return subnet_private_association_sg
+
 # Public ------------------------------------------------------------------
 
 def create_public_ip(region, resource_group, az):

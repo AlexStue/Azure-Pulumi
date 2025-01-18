@@ -18,7 +18,8 @@ import pulumi_azure as azure
 def create_region_resource_group(region):
     resource_group = azure.core.ResourceGroup(
         f"1-RsGr-{region[:3]}_",
-        location=region
+        location=region,
+        opts=pulumi.ResourceOptions(protect=True)
     )
     return resource_group
 
@@ -72,41 +73,5 @@ def create_outbound_security_rule(region, resource_group, nsg, rule_name, port, 
         destination_address_prefix="*",
     )
     return rule
-
-# ------------------------------------------------------------------
-
-def create_subnet_public(region, resource_group, vnet):
-    subnet_public = azure.network.Subnet(
-        f"4-SubNetPub-{region[:3]}_",
-        resource_group_name=resource_group.name,
-        virtual_network_name=vnet.name,
-        address_prefixes=["10.0.1.0/24"]
-    )
-    return subnet_public
-
-def create_subnet_private(region, resource_group, vnet):
-    subnet_private = azure.network.Subnet(
-        f"4-SubNetPri-{region[:3]}_",
-        resource_group_name=resource_group.name,
-        virtual_network_name=vnet.name,
-        address_prefixes=["10.0.2.0/24"]
-    )
-    return subnet_private
-
-def associate_subnet_public_with_security_group(region, public_subnet, security_rule):
-    subnet_public_association_sg = azure.network.SubnetNetworkSecurityGroupAssociation(
-        f"4-SubNetPub-asso-{region[:3]}_",
-        subnet_id=public_subnet.id,
-        network_security_group_id=security_rule.id
-    )
-    return subnet_public_association_sg
-
-def associate_subnet_private_with_security_group(region, private_subnet, security_rule):
-    subnet_private_association_sg = azure.network.SubnetNetworkSecurityGroupAssociation(
-        f"4-SubNetPri-asso-{region[:3]}_",
-        subnet_id=private_subnet.id,
-        network_security_group_id=security_rule.id
-    )
-    return subnet_private_association_sg
 
 # ------------------------------------------------------------------

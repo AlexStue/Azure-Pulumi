@@ -67,6 +67,7 @@ sudo systemctl enable apache2
                 "create_option": "FromImage",
                 "managed_disk": {"storage_account_type": "Standard_LRS"},
                 "disk_size_gb": 30,
+                "delete_option": "Delete",
             }
         },
         os_profile={
