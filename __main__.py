@@ -22,15 +22,12 @@ for region in regions:
 
 # ------------------------------------------------------------------
 
-network_outputs = {}
-app_outputs = {}
-
 for region in regions:
     resource_group_region = resource_groups[region]
 
-    (region_vnet, region_nsg, region_az_subnets_private, region_backend_pool) = \
-        infra_dev_network.create_region_network(region, resource_group_region, azs)
+    # (region_vnet, region_nsg, region_az_subnets_private, region_backend_pool) = \
+    #     infra_dev_network.create_region_network(region, resource_group_region, azs)
 
-    infra_dev_app.create_region_app(region, resource_group_region, region_az_subnets_private,region_nsg,region_backend_pool, azs[region])
+    #infra_dev_app.create_region_app(region, resource_group_region, region_az_subnets_private,region_nsg,region_backend_pool, azs[region])
 
 # ------------------------------------------------------------------

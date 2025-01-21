@@ -10,8 +10,8 @@ import pulumi_azure_native as azure_native
 
 def create_region_app(region, resource_group_region, region_az_subnets_private, region_nsg, backend_pool, azs):
     for az in azs:
-        region_az_nic = create_nic_in_az(region, resource_group_region, region_az_subnets_private[az], region_nsg, backend_pool, az)
-        region_az_vm = create_vm_in_az(region, resource_group_region, region_az_nic, az)
+        region_az_nic   = create_nic_in_az(region, resource_group_region, region_az_subnets_private[az], region_nsg, backend_pool, az)
+        region_az_vm    = create_vm_in_az(region, resource_group_region, region_az_nic, az)
 
 # ------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ exec > /tmp/startup.log 2>&1
 set -x
 sudo apt update
 sudo apt install apache2 -y
-echo "Hi Nadja! I'm an Azure Instance in Region '{region}' in AZ-{az}. Its very nice to see you. Have a great Monday :) " | sudo tee /var/www/html/index.html
+echo "Hi! I'm an Azure Instance in Region '{region}' in AZ-{az}." | sudo tee /var/www/html/index.html
 sudo systemctl start apache2
 sudo systemctl enable apache2
 """

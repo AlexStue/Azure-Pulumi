@@ -30,32 +30,32 @@ import pulumi_azure_native as azure_native
 def create_region_network(region, resource_group_region, azs):
 
     region_vnet = create_region_vnet(region, resource_group_region)
-    region_nsg = create_network_security_group(region, resource_group_region)
+    region_nsg  = create_network_security_group(region, resource_group_region)
     
     create_inbound_security_rule(region, resource_group_region, region_nsg, "SSH", 22, 100)
     create_inbound_security_rule(region, resource_group_region, region_nsg, "HTTP", 80, 200)
     create_outbound_security_rule(region, resource_group_region, region_nsg, "SSH-Out", 22, 300)
     create_outbound_security_rule(region, resource_group_region, region_nsg, "HTTP-Out", 80, 400)
 
-    region_az_alb, region_public_ip_alb  = create_alb(region, resource_group_region)
-    region_backend_pool = create_backend_pool(region, region_az_alb)
-    region_rule = create_alb_rule_for_az(region, region_az_alb, region_backend_pool)
+    region_az_alb, region_public_ip_alb     = create_alb(region, resource_group_region)
+    region_backend_pool                     = create_backend_pool(region, region_az_alb)
+    region_rule                             = create_alb_rule_for_az(region, region_az_alb, region_backend_pool)
 
     region_az_subnets_public = {}
     region_az_subnets_private = {}
 
     for az in azs[region]:
-        region_az_subnets_public[az] = create_subnet_public(region, resource_group_region, region_vnet, az)
-        region_az_subnets_private[az] = create_subnet_private(region, resource_group_region, region_vnet, az)
+        region_az_subnets_public[az]    = create_subnet_public(region, resource_group_region, region_vnet, az)
+        region_az_subnets_private[az]   = create_subnet_private(region, resource_group_region, region_vnet, az)
         associate_subnet_public_with_security_group(region, region_az_subnets_public[az], region_nsg, az)
         associate_subnet_private_with_security_group(region, region_az_subnets_private[az], region_nsg, az)
 
-        region_az_public_ip = create_public_ip(region, resource_group_region, az)
-        region_az_nat_gateway = create_nat_gateway(region, resource_group_region, az)
+        region_az_public_ip     = create_public_ip(region, resource_group_region, az)
+        region_az_nat_gateway   = create_nat_gateway(region, resource_group_region, az)
         associate_nat_gateway_with_subnet(region, region_az_subnets_public[az], region_az_nat_gateway, az)
         associate_nat_gateway_with_PIP(region, region_az_nat_gateway, region_az_public_ip, az)
 
-        region_az_rt_private = create_route_table_private(region, resource_group_region, az)
+        region_az_rt_private    = create_route_table_private(region, resource_group_region, az)
         associate_route_table_with_private_subnet(region, region_az_subnets_private[az], region_az_rt_private, az)
 
     return region_vnet, region_nsg, region_az_subnets_private, region_backend_pool
