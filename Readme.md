@@ -1,10 +1,16 @@
 
-DRAFT
+## -DRAFT-
+
+## Dies ist ein Projekt in der IaC in Pulumi und Python für die Azure Cloud.
+
+Ziel ist folgende Architektur:
+
+![alt text](pics/Architektur-1.png)
 
 
-Structure:
+## Die Struktur des Projektes ist folgendermaßen aufgebaut:
 
-Subscription: My-Cloud  
+My Azure Cloud with Pulumi 
 ├── Stack dev
 │  ├── RG: dev-network  
 │  │     ├── VNet  
@@ -22,7 +28,7 @@ Subscription: My-Cloud
 │  ├── RG: prod-app  
 
 
-First Start:
+## Arbeiten mit dem Projekt:
 
 - read SubId:
 - Create ResourceGroups:
@@ -30,6 +36,8 @@ First Start:
   - 
 - Build: Pulumi up
 
+
+### Notizen:
 
 az group create --name MyResourceGroup --location germanywestcentral # francecentral
 pulumi import azure-native:resources:ResourceGroup myResourceGroup /subscriptions/{subId}/resourceGroups/MyResourceGroup
